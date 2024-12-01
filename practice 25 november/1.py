@@ -1,42 +1,38 @@
-import math
+def recursion_add_one(current_string, number_length, array_to_record):
+    return recursion(current_string + "1", number_length, array_to_record)
 
 
-def solve_formula(number_n):
-    first_slag = (3 - 3**0.5) / 12
-    second_slag = (1 - 3**0.5) ** number_n
-    third_slag = (3 + 3**0.5) / 12
-    fourth_slag = (1 + 3**0.5) ** number_n
-    a_n = math.ceil(first_slag * second_slag + third_slag * fourth_slag)
-    print(a_n)
+def recursion_add_zero(current_string, number_length, array_to_record):
+    return recursion(current_string + "0", number_length, array_to_record)
 
 
-def recursion_a(number_n):
-    if number_n == 0:
-        return 1
+def recursion(current_string, number_length, array_to_record):
+    if len(current_string) == number_length:
+        array_to_record.append(current_string)
+        return
 
-    if number_n == 1:
-        return recursion_a(number_n - 1)
+    if len(current_string) == 0:
+        recursion_add_one(current_string, number_length, array_to_record)
+        recursion_add_zero(current_string, number_length, array_to_record)
+    else:
+        if current_string[-1] == "0":
+            recursion_add_one(current_string, number_length, array_to_record)
 
-    return recursion_a(number_n - 1) + recursion_b(number_n - 1) + recursion_c(number_n - 1)
+        if current_string[-1] == "1":
+            recursion_add_zero(current_string, number_length, array_to_record)
+            recursion_add_one(current_string, number_length, array_to_record)
 
 
-def recursion_b(number_n):
-    if number_n == 1:
-        return 1
+def find_all(number):
+    record = []
+    recursion("", number, record)
+    print(record)
 
-    return recursion_a(number_n - 1) + recursion_b(number_n - 1) + recursion_c(number_n - 1)
 
-
-def recursion_c(number_n):
-    if number_n == 1:
-        return 1
-
-    return recursion_a(number_n - 1) + recursion_b(number_n - 1)
+def solve():
+    n = int(input())
+    find_all(n)
 
 
 if __name__ == "__main__":
-    n = int(input("input number N "))
-    record = []
-    print(f"{solve_formula(n)} - ответ для формулы")
-    answer = recursion_a(n)
-    print(f"{answer} - ответ для тройной рекурсии")
+    solve()
