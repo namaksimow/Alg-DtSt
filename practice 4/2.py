@@ -1,97 +1,114 @@
 import string
-import random
+alphabet = list(string.ascii_uppercase)
 
 
-def get_second_priority(first_priority, second_priority, third_priority, global_alphabet, tasks):
-    alphabet = global_alphabet[first_priority + second_priority: first_priority + second_priority + third_priority]
-    for i in range(second_priority):
-        tasks[global_alphabet[first_priority + i]] = get_random_letter(second_priority, third_priority, alphabet)
+def input_dependency():
+    n = int(input("Input count projects"))
+    local_alphabet = alphabet[:n]
+    tasks = {}
+    priority = {}
+    for i in range(n):
+        depend = list(map(str, input().split()))
+        letter = depend[0]
+        dependency = depend[1]
+        if letter not in tasks:
+            tasks[letter] = dependency
+            priority[letter] = 0
+
+    return tasks, priority
 
 
-def get_first_priority(first_priority, second_priority, third_priority, global_alphabet, tasks):
-    alphabet = global_alphabet[first_priority: first_priority + second_priority + third_priority]
-    for i in range(first_priority):
-        tasks[global_alphabet[i]] = get_random_letter(first_priority, second_priority, alphabet)
+def get_first_priority(tasks, priority):
+    priority_index = 1
+    key_to_delete = []
+    for key in tasks:
+        if tasks[key] == "empty":
+            priority[key] = priority_index
+            priority_index += 1
+            key_to_delete.append(key)
+
+    for key in key_to_delete:
+        if key in tasks:
+            del tasks[key]
+
+    return tasks, priority, priority_index
 
 
-def get_random_letter(start_range, end_range, alphabet):
-    random_letters = set()
-    for i in range(start_range):
-        count_dependency = random.randint(1, end_range)
-        while len(random_letters) < count_dependency:
-            random_letter = random.choice(alphabet)
-            random_letters.add(random_letter)
-    result = ''.join(sorted(random_letters))
+def get_second_priority(tasks, priority, priority_index):
+    key_to_delete = []
+    key_value_to_delete = []
+    for key in tasks:
+        letters = tasks[key]
+        is_convert = check_string(letters, priority)
+        if is_convert:
+            new_letters = replace_string(letters, priority)
+            tasks[key] = new_letters
+            key_to_delete.append(key)
+            key_value_to_delete.append(new_letters)
 
+    key_value_to_delete, key_to_delete = sort_values(key_value_to_delete, key_to_delete)
+    for key in key_to_delete:
+        if key in tasks:
+            del tasks[key]
+            priority[key] = priority_index
+            priority_index += 1
+
+    return tasks, priority, priority_index
+
+
+def sort_values(values_list, key_list):
+    n = len(values_list)
+    for i in range(n):
+        for j in range(n - i - 1):
+            if values_list[j] > values_list[j + 1]:
+                values_list[j], values_list[j + 1] = values_list[j + 1], values_list[j]
+                key_list[j], key_list[j + 1] = key_list[j + 1], key_list[j]
+    return values_list, key_list
+
+
+def check_string(string_to_check, priority):
+    for i in range(len(string_to_check)):
+        char = string_to_check[i]
+        if priority[char] == 0:
+            return False
+
+    return True
+
+
+def replace_string(old_string, priority):
+    new_letters = ""
+    for i in range(len(old_string)):
+        char = old_string[i]
+        if char in priority and priority[char] != 0:
+            new_letters += str(priority[char])
+
+    sorted_digits = sorted(new_letters, reverse=True)
+    result = ''.join(sorted_digits)
     return result
 
 
-def fill_tasks(tasks, first_priority, second_priority, third_priority, global_alphabet):
-    get_first_priority(first_priority, second_priority, third_priority, global_alphabet, tasks)
-    get_second_priority(first_priority, second_priority, third_priority, global_alphabet, tasks)
-
-
-def fill_tasks_priority(tasks, tasks_priority, first_priority, second_priority, third_priority, global_alphabet):
-    fp = global_alphabet[:first_priority]
-    fp_dict = {}
-    fp_list = []
-    fp_letter = []
-    for i in range(len(fp)):
-        fp_dict[fp[i]] = tasks[fp[i]]
-    for key in fp_dict:
-        fp_list.append(fp_dict[key])
-        fp_letter.append(key)
-    for i in range(len(fp_list) - 1):
-        for j in range(len(fp_list) - i - 1):
-            if fp_list[j] < fp_list[j + 1]:
-                fp_list[j], fp_list[j + 1] = fp_list[j + 1], fp_list[j]
-                fp_letter[j], fp_letter[j + 1] = fp_letter[j + 1], fp_letter[j]
-
-    sp = global_alphabet[first_priority: first_priority + second_priority]
-    sp_dict = {}
-    sp_list = []
-    sp_letter = []
-    for i in range(len(sp)):
-        sp_dict[sp[i]] = tasks[sp[i]]
-    for key in sp_dict:
-        sp_list.append(sp_dict[key])
-        sp_letter.append(key)
-    for i in range(len(sp_list) - 1):
-        for j in range(len(sp_list) - i - 1):
-            if sp_list[j] < sp_list[j + 1]:
-                sp_list[j], sp_list[j + 1] = sp_list[j + 1], sp_list[j]
-                sp_letter[j], sp_letter[j + 1] = sp_letter[j + 1], sp_letter[j]
-
-    tp = global_alphabet[first_priority + second_priority: first_priority + second_priority + third_priority]
-
-    for i in range(1, third_priority + 1):
-        tasks_priority[i] = tp[i - 1]
-    for i in range(third_priority + 1, third_priority + second_priority + 1):
-        tasks_priority[i] = sp_letter[i - third_priority - 1]
-    for i in range(third_priority + second_priority + 1, third_priority + second_priority + first_priority + 1):
-        tasks_priority[i] = fp_letter[i - third_priority - second_priority - 1]
-
-
-def create_dependency(first_priority, second_priority, third_priority):
-    tasks = {letter: "" for letter
-             in list(string.ascii_uppercase)[:first_priority + second_priority + third_priority]}
-    tasks_priority = {number: "" for number in range(1, first_priority + second_priority + third_priority + 1)}
-    global_alphabet = list(string.ascii_uppercase)
-
-    fill_tasks(tasks, first_priority, second_priority, third_priority, global_alphabet)
-
-    for key in tasks:
-        print(key, tasks[key], len(tasks[key]))
-
-    fill_tasks_priority(tasks, tasks_priority, first_priority, second_priority, third_priority, global_alphabet)
-    print(tasks_priority)
+def appoint_employee(priority):
+    priority = sorted(priority, key=priority.get, reverse=True)
+    employee1 = []
+    employee2 = []
+    for i in range(len(priority)):
+        if i % 2 == 0:
+            employee1.append(priority[i])
+        else:
+            employee2.append(priority[i])
+    return employee1, employee2
 
 
 def solve():
-    first_priority = int(input("Input tasks first priority "))
-    second_priority = int(input("Input tasks second priority "))
-    third_priority = int(input("Input tasks third priority "))
-    create_dependency(first_priority, second_priority, third_priority)
+    tasks, priority = input_dependency()
+    tasks, priority, priority_index = get_first_priority(tasks, priority)
+
+    while len(tasks) > 0:
+        tasks, priority, priority_index = get_second_priority(tasks, priority, priority_index)
+
+    e1, e2 = appoint_employee(priority)
+    print(e1)
+    print(e2)
 
 
 if __name__ == "__main__":
