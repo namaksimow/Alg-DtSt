@@ -4,7 +4,6 @@ alphabet = list(string.ascii_uppercase)
 
 def input_dependency():
     n = int(input("Input count projects"))
-    local_alphabet = alphabet[:n]
     tasks = {}
     priority = {}
     for i in range(n):
@@ -19,6 +18,8 @@ def input_dependency():
 
 
 def get_first_priority(tasks, priority):
+    priority_work = {}
+    priority_work_index = 1
     priority_index = 1
     key_to_delete = []
     for key in tasks:
@@ -30,11 +31,12 @@ def get_first_priority(tasks, priority):
     for key in key_to_delete:
         if key in tasks:
             del tasks[key]
+    key_to_delete = key_to_delete[::-1]
+    priority_work[priority_work_index] = key_to_delete
+    return tasks, priority, priority_index, priority_work, priority_work_index
 
-    return tasks, priority, priority_index
 
-
-def get_second_priority(tasks, priority, priority_index):
+def get_second_priority(tasks, priority, priority_index, priority_work, priority_work_index):
     key_to_delete = []
     key_value_to_delete = []
     for key in tasks:
@@ -53,7 +55,10 @@ def get_second_priority(tasks, priority, priority_index):
             priority[key] = priority_index
             priority_index += 1
 
-    return tasks, priority, priority_index
+    key_to_delete = key_to_delete[::-1]
+    priority_work_index += 1
+    priority_work[priority_work_index] = key_to_delete
+    return tasks, priority, priority_index, priority_work, priority_work_index
 
 
 def sort_values(values_list, key_list):
@@ -87,28 +92,41 @@ def replace_string(old_string, priority):
     return result
 
 
-def appoint_employee(priority):
+def appoint_employee(priority, work):
+    work = dict(sorted(work.items(), key=lambda item: item[0], reverse=True))
     priority = sorted(priority, key=priority.get, reverse=True)
-    employee1 = []
-    employee2 = []
-    for i in range(len(priority)):
-        if i % 2 == 0:
-            employee1.append(priority[i])
-        else:
-            employee2.append(priority[i])
+    employee1 = [0 for _ in range(len(priority))]
+    employee2 = [0 for _ in range(len(priority))]
+    e1index = 0
+    e2index = 0
+    for key in work:
+        works = work[key]
+        for i in range(len(works)):
+            if e1index > e2index:
+                employee2[e2index] = works[i]
+                e2index += 1
+            else:
+                employee1[e1index] = works[i]
+                e1index += 1
+
+        if len(works) == 1:
+            e1index = max(e1index, e2index)
+            e2index = e1index
+
     return employee1, employee2
 
 
 def solve():
     tasks, priority = input_dependency()
-    tasks, priority, priority_index = get_first_priority(tasks, priority)
+    tasks, priority, priority_index, work, work_index = get_first_priority(tasks, priority)
 
     while len(tasks) > 0:
-        tasks, priority, priority_index = get_second_priority(tasks, priority, priority_index)
+        tasks, priority, priority_index, work, work_index \
+            = get_second_priority(tasks, priority, priority_index, work, work_index)
 
-    e1, e2 = appoint_employee(priority)
-    print(e1)
-    print(e2)
+    e1, e2 = appoint_employee(priority, work)
+    print(f"\nfirst employee - {e1}")
+    print(f"second employee - {e2}")
 
 
 if __name__ == "__main__":
