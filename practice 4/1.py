@@ -2,7 +2,7 @@ import random
 import string
 
 
-# sorting tasks by time, if ai > bi : first else: second
+# sorting tasks by time, if a_i > b_i : first else: second
 def grouping_by_time(tasks: dict) -> (dict, dict):
     first_group = {}
     second_group = {}
