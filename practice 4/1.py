@@ -2,6 +2,7 @@ import random
 import string
 
 
+# sorting tasks by time, if ai > bi : first else: second
 def grouping_by_time(tasks: dict) -> (dict, dict):
     first_group = {}
     second_group = {}
@@ -14,6 +15,7 @@ def grouping_by_time(tasks: dict) -> (dict, dict):
     return first_group, second_group
 
 
+# input duration for 1 and 2 second employee
 def input_task_time(count_task: int) -> dict:
     alphabet = list(string.ascii_lowercase)
     tasks: dict = {}
@@ -23,6 +25,7 @@ def input_task_time(count_task: int) -> dict:
     return tasks
 
 
+# sorting first group by ascending, second group by descending
 def sort_group(first_group, second_group):
     first_group = dict(sorted(first_group.items(), key=lambda pair: pair[1][0]))
     second_group = dict(sorted(second_group.items(), key=lambda pair: pair[1][0], reverse=True))
@@ -38,6 +41,7 @@ def start_time(general_group):
     return time_end_first, time_end_second
 
 
+# point tasks between two employees
 def task_distribution(general_group):
     time_end_first, time_end_second = start_time(general_group)
     
